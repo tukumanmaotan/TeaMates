@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <style>
+    /* Custom CSS styles */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+    .email-container {
+      background-color: #fff7ec;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .email-header {
+      text-align: center;
+      padding-bottom: 20px;
+    }
+    .email-header img {
+      max-width: 150px; /* Adjust the size here */
+      height: auto; /* Maintain aspect ratio */
+    }
+    .email-content {
+      line-height: 1.6;
+      color: #333333;
+    }
+    .email-footer {
+      text-align: center;
+      padding-top: 20px;
+      font-size: 12px;
+      color: #888888;
+    }
+    .button {
+      background-color: #b35426; /* Button background color */
+      color: #fff7ec; /* Button text color */
+      border-radius: 4px;
+      display: inline-block;
+      font-size: 14px;
+      font-weight: bold;
+      line-height: 45px;
+      text-align: center;
+      text-decoration: none;
+      width: 200px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      border: 1px solid #b35426; /* Border color */
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+    .premium-paid-header, .tax-invoice-header {
+      background-color: #b35426; /* Background color for headers */
+      color: #fff7ec; /* Font color for headers */
+      font-weight: bold;
+      padding: 10px;
+    }
+    .highlight {
+      background-color: #b35426; /* Background color for Total row */
+      color: #fff7ec; /* Font color for Total row */
+      font-weight: bold;
+      text-align: right;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="email-header">
+      <img src="https://raw.githubusercontent.com/tukumanmaotan/TeaMates/6e882e32b66ec072fcc2cd54e0d860f9f51be0a0/3_TeaMates_Logo%20files_ALTERNATIVE_Orange_1.png" alt="Your Brand Logo">
+    </div>
+    <div class="email-content">
+      <h1>Tax Invoice</h1>
+      <p><strong>Seller:</strong></p>
+      <p>Pacifican Limited<br>
+         15 Wilkes Road <br>
+         Wigram, Christchurch, 8042 <br>
+         New Zealand <br>
+         GST Number: 123-456-789</p>
+
+      <p><strong>Buyer:</strong></p>
+      <p>{{ shipping_address.first_name }} {{ shipping_address.last_name }}<br>
+         {{ shipping_address.address1 }}<br>
+         {% if shipping_address.address2 %}{{ shipping_address.address2 }}<br>{% endif %}
+         {{ shipping_address.city }}, {{ shipping_address.province }} {{ shipping_address.zip }}<br>
+         {{ shipping_address.country }}</p>
+
+      <p><strong>Invoice Details:</strong></p>
+      <p>Invoice Number: {{ order.name }}<br>
+         Date: {{ order.created_at | date: "%d %B %Y" }}</p>
+
+      <p><strong>Items:</strong></p>
+      <table>
+        <thead>
+          <tr>
+            <th class="premium-paid-header">Description</th>
+            <th class="premium-paid-header">Quantity</th>
+            <th class="premium-paid-header">Unit Price (Excl. GST)</th>
+            <th class="premium-paid-header">Total (Excl. GST)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for line in order.line_items %}
+          <tr>
+            <td>{{ line.title }}</td>
+            <td>{{ line.quantity }}</td>
+            <td>{{ line.price | divided_by: 1.15 | money }}</td>
+            <td>{{ line.price | divided_by: 1.15 | times: line.quantity | money }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <p><strong>Order Summary:</strong></p>
+      <table>
+        <thead>
+          <tr>
+            <th class="tax-invoice-header">Description</th>
+            <th class="tax-invoice-header">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Original Price (Excl. GST):</td>
+            <td>{{ order.subtotal_price | divided_by: 1.15 | money }}</td>
+          </tr>
+          {% if order.total_discounts %}
+          <tr>
+            <td>Discounts:</td>
+            <td>-{{ order.total_discounts | money }}</td>
+          </tr>
+          {% endif %}
+          <tr>
+            <td>Shipping:</td>
+            <td>{{ order.shipping_price | money }}</td>
+          </tr>
+          <tr>
+            <td>GST (15%):</td>
+            <td>{{ order.total_price | times: 0.15 | money }}</td>
+          </tr>
+          <tr class="highlight">
+            <td>Total (Incl. GST):</td>
+            <td>{{ order.total_price | money }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>If you have any questions about your order, please contact us at info@teamates.co.nz.</p>
+      <p>
+        <a href="{{ order.status_url }}" class="button">View your order</a>
+      </p>
+    </div>
+    <div class="email-footer">
+      <p>&copy; {{ "now" | date: "%Y" }} TeaMates. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
